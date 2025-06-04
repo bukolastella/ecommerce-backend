@@ -32,4 +32,10 @@ export class Users {
 
   @Column({ nullable: false })
   password: string;
+
+  @Column({ nullable: true })
+  emailVerificationHash?: string;
+
+  @Column({ nullable: true, type: 'timestamp' })
+  emailVerificationExpiresAt?: Date;
 }
