@@ -1,6 +1,11 @@
 import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { SignUpDto, VerifyEmailDto } from './dto/signup.dto';
+import {
+  LoginDto,
+  SendVerifyEmailDto,
+  SignUpDto,
+  VerifyEmailDto,
+} from './dto/signup.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -12,8 +17,18 @@ export class AuthController {
     return this.authService.signUp(signUpDto);
   }
 
+  @Post('login')
+  login(@Body() dto: LoginDto) {
+    return this.authService.login(dto);
+  }
+
   @Post('verify-email')
   verifyEmail(@Body() dto: VerifyEmailDto) {
     return this.authService.verifyEmail(dto);
+  }
+
+  @Post('resend-verify-email')
+  resendVerifyEmail(@Body() dto: SendVerifyEmailDto) {
+    return this.authService.resendVerifyEmail(dto);
   }
 }

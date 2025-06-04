@@ -5,8 +5,6 @@ import { MailService } from './mail.service';
 import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
 import * as path from 'path';
 
-console.log(__dirname, '__dirname');
-
 @Module({
   imports: [
     MailerModule.forRootAsync({

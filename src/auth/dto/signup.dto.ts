@@ -32,3 +32,19 @@ export class VerifyEmailDto {
   @Length(6, 6, { message: 'Token must be exactly 6 characters' })
   token: string;
 }
+
+export class LoginDto {
+  @ApiProperty()
+  @IsEmail()
+  email: string;
+
+  @ApiProperty()
+  @IsString()
+  password: string;
+}
+
+export class SendVerifyEmailDto {
+  @ApiProperty()
+  @IsEmail()
+  email: string;
+}
