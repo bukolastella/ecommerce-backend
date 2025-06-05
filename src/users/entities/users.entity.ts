@@ -44,6 +44,14 @@ export class Users {
   @Column({ nullable: true, type: 'timestamp' })
   emailVerificationExpiresAt: Date | null;
 
+  @Exclude()
+  @Column({ nullable: true, type: 'varchar' })
+  forgotPasswordHash: string | null;
+
+  @Exclude()
+  @Column({ nullable: true, type: 'timestamp' })
+  forgotPasswordExpiresAt: Date | null;
+
   @BeforeInsert()
   async hashPassword() {
     this.password = await bcrypt.hash(this.password, 12);

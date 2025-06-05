@@ -5,7 +5,9 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import {
+  ForgotPasswordDto,
   LoginDto,
+  ResetPasswordDto,
   SendVerifyEmailDto,
   SignUpDto,
   VerifyEmailDto,
@@ -174,5 +176,68 @@ export class AuthService {
       token,
       user,
     };
+  };
+
+  forgotPassword = async (dto: ForgotPasswordDto) => {
+    const { email } = dto;
+
+    const user = await this.usersRepo.findOneBy({ email });
+
+    if (!user) throw new NotFoundException('User not found');
+
+    const generatedToken = generateSecureSixDigitCode();
+
+    const generatedTokenHash = hashString(generatedToken);
+
+    const generatedTokenHashExpiresAt = new Date(Date.now() + 10 * 60 * 1000);
+
+    await this.usersRepo.save({
+      ...user,
+      forgotPasswordHash: generatedTokenHash,
+      forgotPasswordExpiresAt: generatedTokenHashExpiresAt,
+    });
+
+    await this.mailService.sendMail({
+      to: user.email,
+      subject: 'Forgot Password',
+      template: 'email-verification', //
+      context: {
+        name: user.name,
+        token: generatedToken,
+      },
+    });
+
+    return { message: 'Token sent successfully' };
+  };
+
+  resetPassword = async (dto: ResetPasswordDto) => {
+    const { email, token, password, confirmPassword } = dto;
+
+    if (password !== confirmPassword) {
+      throw new BadRequestException('Passwords do not match');
+    }
+
+    const user = await this.usersRepo.findOneBy({ email });
+
+    if (!user) throw new NotFoundException('User not found');
+
+    if (
+      !user.forgotPasswordExpiresAt ||
+      user.forgotPasswordExpiresAt.getTime() < Date.now()
+    ) {
+      throw new BadRequestException('Token has expired');
+    }
+
+    const incomingHash = hashString(token);
+    if (incomingHash !== user.forgotPasswordHash) {
+      throw new BadRequestException('Invalid token');
+    }
+
+    user.forgotPasswordHash = null;
+    user.forgotPasswordExpiresAt = null;
+
+    await this.usersRepo.save(user);
+
+    return { message: 'Reset done successfully' };
   };
 }

@@ -48,3 +48,27 @@ export class SendVerifyEmailDto {
   @IsEmail()
   email: string;
 }
+
+export class ForgotPasswordDto {
+  @ApiProperty()
+  @IsEmail()
+  email: string;
+}
+
+export class ResetPasswordDto {
+  @ApiProperty()
+  @IsEmail()
+  email: string;
+
+  @ApiProperty()
+  @Length(6, 6, { message: 'Token must be exactly 6 characters' })
+  token: string;
+
+  @ApiProperty()
+  @IsString()
+  password: string;
+
+  @ApiProperty()
+  @IsString()
+  confirmPassword: string;
+}
