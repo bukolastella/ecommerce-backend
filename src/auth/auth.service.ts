@@ -9,7 +9,7 @@ import {
   SendVerifyEmailDto,
   SignUpDto,
   VerifyEmailDto,
-} from './dto/signup.dto';
+} from './dto/auth.dto';
 import { QueryFailedError, Repository } from 'typeorm';
 import { Users } from 'src/users/entities/users.entity';
 import { InjectRepository } from '@nestjs/typeorm';

@@ -5,7 +5,7 @@ import {
   SendVerifyEmailDto,
   SignUpDto,
   VerifyEmailDto,
-} from './dto/signup.dto';
+} from './dto/auth.dto';
 
 @Controller('auth')
 export class AuthController {
