@@ -58,11 +58,32 @@ export class Users {
   @Column({ nullable: true, type: 'timestamp' })
   forgotPasswordExpiresAt: Date | null;
 
+  @Exclude()
+  @Column({ nullable: true, type: 'timestamp' })
+  passwordChangedAt: Date | null;
+
   @BeforeInsert()
-  @BeforeUpdate()
-  async hashPassword() {
-    if (this.password) {
+  async hashPasswordOnInsert() {
+    if (this.password && !this.password.startsWith('$2b$12$')) {
       this.password = await bcrypt.hash(this.password, 12);
     }
+  }
+
+  @BeforeUpdate()
+  async hashPasswordOnUpdate() {
+    if (this.password && !this.password.startsWith('$2b$12$')) {
+      this.passwordChangedAt = new Date();
+      this.password = await bcrypt.hash(this.password, 12);
+    }
+  }
+
+  hasPasswordChangedAfter(JWTTimestamp: number): boolean {
+    if (this.passwordChangedAt) {
+      const changedTimestamp = Math.floor(
+        this.passwordChangedAt.getTime() / 1000,
+      );
+      return JWTTimestamp < changedTimestamp;
+    }
+    return false;
   }
 }

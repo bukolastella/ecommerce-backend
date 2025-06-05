@@ -72,3 +72,17 @@ export class ResetPasswordDto {
   @IsString()
   confirmPassword: string;
 }
+
+export class ChangePasswordDto {
+  @ApiProperty()
+  @IsString()
+  password: string;
+
+  @ApiProperty()
+  @IsString()
+  newPassword: string;
+
+  @ApiProperty()
+  @IsString()
+  confirmNewPassword: string;
+}

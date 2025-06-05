@@ -5,6 +5,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import {
+  ChangePasswordDto,
   ForgotPasswordDto,
   LoginDto,
   ResetPasswordDto,
@@ -263,5 +264,21 @@ export class AuthService {
     await this.clearTokenFields(user, TokenType.FORGOT_PASSWORD);
 
     return { message: 'Password reset successfully' };
+  };
+
+  changePassword = (dto: ChangePasswordDto) => {
+    const { password, newPassword, confirmNewPassword } = dto;
+
+    if (newPassword !== confirmNewPassword) {
+      throw new BadRequestException('Passwords do not match');
+    }
+
+    if (password === newPassword) {
+      throw new BadRequestException(
+        "New password can't be the same as old password",
+      );
+    }
+
+    return { message: 'Password changes successfully' };
   };
 }
