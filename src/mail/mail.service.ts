@@ -19,7 +19,7 @@ export class MailService {
     };
   }) => {
     await this.mailService.sendMail({
-      from: 'B.stella',
+      from: 'B.stella@test.com',
       to,
       subject,
       template,

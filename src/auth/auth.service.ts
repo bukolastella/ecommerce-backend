@@ -27,8 +27,37 @@ interface PostgreSQLError {
   constraint?: string;
 }
 
+enum TokenType {
+  EMAIL_VERIFICATION = 'email_verification',
+  FORGOT_PASSWORD = 'forgot_password',
+}
+
+interface TokenFields {
+  hashField: keyof Users;
+  expiresAtField: keyof Users;
+  emailTemplate: string;
+  emailSubject: string;
+}
+
 @Injectable()
 export class AuthService {
+  private readonly TOKEN_EXPIRY_MINUTES = 10;
+
+  private readonly tokenConfig: Record<TokenType, TokenFields> = {
+    [TokenType.EMAIL_VERIFICATION]: {
+      hashField: 'emailVerificationHash',
+      expiresAtField: 'emailVerificationExpiresAt',
+      emailTemplate: 'email-verification',
+      emailSubject: 'Verify Your Email',
+    },
+    [TokenType.FORGOT_PASSWORD]: {
+      hashField: 'forgotPasswordHash',
+      expiresAtField: 'forgotPasswordExpiresAt',
+      emailTemplate: 'forgot-password',
+      emailSubject: 'Forgot Password',
+    },
+  };
+
   constructor(
     @InjectRepository(Users)
     private readonly usersRepo: Repository<Users>,
@@ -36,55 +65,112 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
+  private async generateAndStoreToken(
+    user: Users,
+    tokenType: TokenType,
+  ): Promise<string> {
+    const token = generateSecureSixDigitCode();
+    const tokenHash = hashString(token);
+    const expiresAt = new Date(
+      Date.now() + this.TOKEN_EXPIRY_MINUTES * 60 * 1000,
+    );
+
+    const config = this.tokenConfig[tokenType];
+
+    const updatedUser = {
+      ...user,
+      [config.hashField]: tokenHash,
+      [config.expiresAtField]: expiresAt,
+    };
+
+    await this.usersRepo.save(updatedUser);
+    return token;
+  }
+
+  private verifyToken(user: Users, token: string, tokenType: TokenType) {
+    const config = this.tokenConfig[tokenType];
+    const expiresAt = user[config.expiresAtField] as Date | null;
+    const storedHash = user[config.hashField] as string | null;
+
+    if (!expiresAt || expiresAt.getTime() < Date.now()) {
+      throw new BadRequestException('Token has expired');
+    }
+
+    const incomingHash = hashString(token);
+    if (incomingHash !== storedHash) {
+      throw new BadRequestException('Invalid token');
+    }
+  }
+
+  private async clearTokenFields(
+    user: Users,
+    tokenType: TokenType,
+  ): Promise<void> {
+    const config = this.tokenConfig[tokenType];
+
+    const updatedUser = this.usersRepo.create({
+      ...user,
+      [config.hashField]: null,
+      [config.expiresAtField]: null,
+    });
+
+    await this.usersRepo.save(updatedUser);
+  }
+
+  private async sendTokenEmail(
+    user: Users,
+    token: string,
+    tokenType: TokenType,
+  ): Promise<void> {
+    const config = this.tokenConfig[tokenType];
+
+    await this.mailService.sendMail({
+      to: user.email,
+      subject: config.emailSubject,
+      template: config.emailTemplate,
+      context: {
+        name: user.name,
+        token,
+      },
+    });
+  }
+
+  private handleDatabaseError(error: unknown): never {
+    if (error instanceof QueryFailedError) {
+      const dbError = error.driverError as PostgreSQLError;
+
+      if (dbError.code === '23505') {
+        if (dbError.detail?.includes('email')) {
+          throw new BadRequestException('Email already exists');
+        }
+        throw new BadRequestException('Resource already exists');
+      }
+    }
+    throw error;
+  }
+
+  private async findUserByEmail(email: string): Promise<Users> {
+    const user = await this.usersRepo.findOneBy({ email });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    return user;
+  }
+
   private sendVerifyEmail = async (dto: SendVerifyEmailDto) => {
     const { email } = dto;
+    const user = await this.findUserByEmail(email);
 
-    const user = await this.usersRepo.findOneBy({ email });
-
-    if (!user) throw new NotFoundException('User not found');
-    if (!user.isEmailVerfied)
+    if (user.isEmailVerfied) {
       throw new BadRequestException('Email already verified');
-
-    try {
-      const emailVerificationToken = generateSecureSixDigitCode();
-
-      const emailVerificationHash = hashString(emailVerificationToken);
-
-      const emailVerificationExpiresAt = new Date(Date.now() + 10 * 60 * 1000);
-
-      await this.usersRepo.save({
-        ...user,
-        emailVerificationHash,
-        emailVerificationExpiresAt,
-      });
-
-      await this.mailService.sendMail({
-        to: user.email,
-        subject: 'Verify Your Email',
-        template: 'email-verification',
-        context: {
-          name: user.name,
-          token: emailVerificationToken,
-        },
-      });
-
-      return user;
-    } catch (error: unknown) {
-      if (error instanceof QueryFailedError) {
-        const dbError = error.driverError as PostgreSQLError;
-
-        if (dbError.code === '23505') {
-          if (dbError.detail?.includes('email')) {
-            throw new BadRequestException('Email already exists');
-          }
-
-          // Generic unique constraint error
-          throw new BadRequestException('Resource already exists');
-        }
-      }
-
-      throw error;
     }
+
+    const token = await this.generateAndStoreToken(
+      user,
+      TokenType.EMAIL_VERIFICATION,
+    );
+    await this.sendTokenEmail(user, token, TokenType.EMAIL_VERIFICATION);
+    return user;
   };
 
   signUp = async (signUpDto: SignUpDto) => {
@@ -94,58 +180,25 @@ export class AuthService {
       throw new BadRequestException('Passwords do not match');
     }
 
-    const user = this.usersRepo.create({
-      ...rest,
-    });
+    const user = this.usersRepo.create({ ...rest });
 
     try {
       await this.usersRepo.save(user);
-
       await this.sendVerifyEmail({ email: signUpDto.email });
-
       return user;
-    } catch (error: unknown) {
-      if (error instanceof QueryFailedError) {
-        const dbError = error.driverError as PostgreSQLError;
-
-        if (dbError.code === '23505') {
-          if (dbError.detail?.includes('email')) {
-            throw new BadRequestException('Email already exists');
-          }
-
-          // Generic unique constraint error
-          throw new BadRequestException('Resource already exists');
-        }
-      }
-
-      throw error;
+    } catch (error) {
+      this.handleDatabaseError(error);
     }
   };
 
   verifyEmail = async (dto: VerifyEmailDto) => {
     const { email, token } = dto;
+    const user = await this.findUserByEmail(email);
 
-    const user = await this.usersRepo.findOneBy({ email });
-
-    if (!user) throw new NotFoundException('User not found');
-
-    if (
-      !user.emailVerificationExpiresAt ||
-      user.emailVerificationExpiresAt.getTime() < Date.now()
-    ) {
-      throw new BadRequestException('Token has expired');
-    }
-
-    const incomingHash = hashString(token);
-    if (incomingHash !== user.emailVerificationHash) {
-      throw new BadRequestException('Invalid token');
-    }
+    this.verifyToken(user, token, TokenType.EMAIL_VERIFICATION);
 
     user.isEmailVerfied = true;
-    user.emailVerificationHash = null;
-    user.emailVerificationExpiresAt = null;
-
-    await this.usersRepo.save(user);
+    await this.clearTokenFields(user, TokenType.EMAIL_VERIFICATION);
 
     return { message: 'Email successfully verified' };
   };
@@ -157,55 +210,41 @@ export class AuthService {
 
   login = async (dto: LoginDto) => {
     const { email, password } = dto;
-    const user = await this.usersRepo.findOneBy({ email });
 
-    if (!user || !(await bcrypt.compare(password, user.password))) {
-      throw new UnauthorizedException('Incorrect email or password!');
+    try {
+      const user = await this.findUserByEmail(email);
+
+      if (!(await bcrypt.compare(password, user.password))) {
+        throw new UnauthorizedException('Incorrect email or password!');
+      }
+
+      if (!user.isEmailVerfied) {
+        await this.sendVerifyEmail({ email: dto.email });
+        throw new BadRequestException(
+          'Email not verified! Check email for token sent.',
+        );
+      }
+
+      const token = await this.jwtService.signAsync({ sub: user.id });
+
+      return { token, user };
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw new UnauthorizedException('Incorrect email or password!');
+      }
+      throw error;
     }
-
-    if (!user.isEmailVerfied) {
-      await this.sendVerifyEmail({ email: dto.email });
-      throw new BadRequestException(
-        'Email not verified! Check email for token sent.',
-      );
-    }
-
-    const token = await this.jwtService.signAsync({ sub: user.id });
-
-    return {
-      token,
-      user,
-    };
   };
 
   forgotPassword = async (dto: ForgotPasswordDto) => {
     const { email } = dto;
+    const user = await this.findUserByEmail(email);
 
-    const user = await this.usersRepo.findOneBy({ email });
-
-    if (!user) throw new NotFoundException('User not found');
-
-    const generatedToken = generateSecureSixDigitCode();
-
-    const generatedTokenHash = hashString(generatedToken);
-
-    const generatedTokenHashExpiresAt = new Date(Date.now() + 10 * 60 * 1000);
-
-    await this.usersRepo.save({
-      ...user,
-      forgotPasswordHash: generatedTokenHash,
-      forgotPasswordExpiresAt: generatedTokenHashExpiresAt,
-    });
-
-    await this.mailService.sendMail({
-      to: user.email,
-      subject: 'Forgot Password',
-      template: 'email-verification', //
-      context: {
-        name: user.name,
-        token: generatedToken,
-      },
-    });
+    const token = await this.generateAndStoreToken(
+      user,
+      TokenType.FORGOT_PASSWORD,
+    );
+    await this.sendTokenEmail(user, token, TokenType.FORGOT_PASSWORD);
 
     return { message: 'Token sent successfully' };
   };
@@ -217,27 +256,12 @@ export class AuthService {
       throw new BadRequestException('Passwords do not match');
     }
 
-    const user = await this.usersRepo.findOneBy({ email });
+    const user = await this.findUserByEmail(email);
+    this.verifyToken(user, token, TokenType.FORGOT_PASSWORD);
 
-    if (!user) throw new NotFoundException('User not found');
+    user.password = password;
+    await this.clearTokenFields(user, TokenType.FORGOT_PASSWORD);
 
-    if (
-      !user.forgotPasswordExpiresAt ||
-      user.forgotPasswordExpiresAt.getTime() < Date.now()
-    ) {
-      throw new BadRequestException('Token has expired');
-    }
-
-    const incomingHash = hashString(token);
-    if (incomingHash !== user.forgotPasswordHash) {
-      throw new BadRequestException('Invalid token');
-    }
-
-    user.forgotPasswordHash = null;
-    user.forgotPasswordExpiresAt = null;
-
-    await this.usersRepo.save(user);
-
-    return { message: 'Reset done successfully' };
+    return { message: 'Password reset successfully' };
   };
 }
