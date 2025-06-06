@@ -229,7 +229,7 @@ export class AuthService {
         );
       }
 
-      if (user.type === UserType.STORE && !user.businessVerfied) {
+      if (user.type === UserType.BUSINESS && !user.businessVerfied) {
         throw new BadRequestException(
           'Business not verified yet. Contact support for more info.',
         );
@@ -308,7 +308,7 @@ export class AuthService {
       user = this.usersRepo.create({ ...rest, avatar: resultFile });
     }
 
-    user = this.usersRepo.create({ ...rest, type: UserType.STORE });
+    user = this.usersRepo.create({ ...rest, type: UserType.BUSINESS });
 
     try {
       await this.usersRepo.save(user);

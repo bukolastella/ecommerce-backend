@@ -11,7 +11,7 @@ import { UserRole } from 'src/admin/admins/dto/admins.dto';
 
 export enum UserType {
   USER = 'user',
-  STORE = 'store',
+  BUSINESS = 'business',
   ADMIN = 'admin',
 }
 

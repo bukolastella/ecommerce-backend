@@ -1,0 +1,159 @@
+<html>
+  <head>
+    <meta charset='UTF-8' />
+    <meta name='viewport' content='width=device-width, initial-scale=1.0' />
+    <title>Business Application Status</title>
+    <style>
+      /* Responsive adjustments */
+      @media only screen and (max-width: 600px) {
+        .container {
+          width: 100% !important;
+          padding: 10px !important;
+        }
+        .button {
+          width: 100% !important;
+        }
+      }
+    </style>
+  </head>
+  <body style='margin: 0; padding: 0; background-color: #f4f4f4;'>
+    <table
+      width='100%'
+      cellpadding='0'
+      cellspacing='0'
+      style='background-color: #f4f4f4; padding: 20px 0;'
+    >
+      <tr>
+        <td align='center'>
+          <table
+            class='container'
+            width='600'
+            cellpadding='0'
+            cellspacing='0'
+            style='
+              background-color: #ffffff;
+              border-radius: 6px;
+              overflow: hidden;
+              box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+              padding: 20px;
+            '
+          >
+            <!-- Header -->
+            <tr>
+              <td align='center' style='padding-bottom: 20px;'>
+                <h1
+                  style='
+                    margin: 0;
+                    font-family: Arial, sans-serif;
+                    color: #333333;
+                    font-size: 24px;
+                  '
+                >
+                  Business Application Status
+                </h1>
+              </td>
+            </tr>
+
+            <!-- Greeting -->
+            <tr>
+              <td style='font-family: Arial, sans-serif; color: #555555;'>
+                <p style='margin: 0 0 15px;'>
+                  Hello
+                  <strong>{{businessName}}</strong>,
+                </p>
+
+                {{#if isApproved}}
+                  <!-- APPROVED BLOCK -->
+                  <p style='margin: 0 0 15px;'>
+                    Congratulations! Your business application has been
+                    <span style='color: #28a745; font-weight: bold;'>
+                      APPROVED
+                    </span>. We’re excited to welcome you to our platform!
+                  </p>
+                  <p style='margin: 0 0 20px;'>
+                    You can now log in and start managing your business
+                    dashboard.
+                  </p>
+                  {{!-- <table width='100%' cellpadding='0' cellspacing='0'>
+                    <tr>
+                      <td align='center'>
+                        <a
+                          href='{{dashboardLink}}'
+                          class='button'
+                          style='
+                          background-color: #28a745;
+                          color: #ffffff;
+                          padding: 12px 20px;
+                          text-decoration: none;
+                          border-radius: 4px;
+                          font-family: Arial, sans-serif;
+                          display: inline-block;
+                          font-size: 16px;
+                          width: auto;
+                        '
+                        >Go to Dashboard</a>
+                      </td>
+                    </tr>
+                  </table> --}}
+                {{else}}
+                  <!-- DISAPPROVED BLOCK -->
+                  <p style='margin: 0 0 15px;'>
+                    We’re sorry to inform you that your business application has
+                    been
+                    <span style='color: #dc3545; font-weight: bold;'>
+                      DISAPPROVED
+                    </span>.
+                  </p>
+                  <p style='margin: 0 0 15px;'>Reason:</p>
+                  <p
+                    style='
+                    margin: 0 0 20px;
+                    background-color: #f8d7da;
+                    color: #721c24;
+                    padding: 10px;
+                    border-radius: 4px;
+                  '
+                  >
+                    {{disapprovalReason}}
+                  </p>
+                  <p style='margin: 0 0 15px;'>
+                    If you have any questions or wish to reapply, please contact
+                    our support team at
+                    <a
+                      href='mailto:support@example.com'
+                      style='color: #007bff;'
+                    >support@example.com</a>.
+                  </p>
+                {{/if}}
+
+                <!-- Footer Note -->
+                <p style='margin: 30px 0 0; color: #999999; font-size: 12px;'>
+                  This email was sent to
+                  <strong>{{businessEmail}}</strong>
+                  because you submitted a business application on our platform.
+                  If you did not apply, please disregard this message.
+                </p>
+              </td>
+            </tr>
+
+            <!-- Footer -->
+            <tr>
+              <td align='center' style='padding-top: 20px;'>
+                <p
+                  style='
+                    margin: 0;
+                    color: #aaaaaa;
+                    font-family: Arial, sans-serif;
+                    font-size: 12px;
+                  '
+                >
+                  &copy; 2025 Your Company Name. All rights reserved.
+                </p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>

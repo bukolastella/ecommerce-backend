@@ -7,6 +7,7 @@ import { Users } from 'src/users/entities/users.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { MailModule } from 'src/mail/mail.module';
 import { AdminsModule } from './admins/admins.module';
+import { BusinessesModule } from './businesses/businesses.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { AdminsModule } from './admins/admins.module';
     TypeOrmModule.forFeature([Users]),
     MailModule,
     AdminsModule,
+    BusinessesModule,
   ],
   controllers: [AdminController],
   providers: [AdminService, UsersService],
