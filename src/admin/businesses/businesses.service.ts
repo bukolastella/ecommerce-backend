@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { Users, UserType } from 'src/users/entities/users.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { FindOptionsWhere, Repository } from 'typeorm';
 import { DisapproveBusinessDto } from './dto/business.dto';
 import { MailService } from 'src/mail/mail.service';
 
@@ -13,11 +13,16 @@ export class BusinessesService {
     private readonly mailService: MailService,
   ) {}
 
-  async findAll() {
-    const businesses = await this.usersRepo.find({
-      where: { type: UserType.BUSINESS },
-    });
+  async findAll(isEmailVerified?: boolean) {
+    const whereCondition: FindOptionsWhere<Users> = { type: UserType.BUSINESS };
 
+    if (isEmailVerified !== undefined) {
+      whereCondition.isEmailVerfied = isEmailVerified;
+    }
+
+    const businesses = await this.usersRepo.find({
+      where: whereCondition,
+    });
     return businesses;
   }
 

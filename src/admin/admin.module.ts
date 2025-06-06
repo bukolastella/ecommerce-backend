@@ -8,6 +8,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { MailModule } from 'src/mail/mail.module';
 import { AdminsModule } from './admins/admins.module';
 import { BusinessesModule } from './businesses/businesses.module';
+import { UsersModule } from './users/users.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { BusinessesModule } from './businesses/businesses.module';
     MailModule,
     AdminsModule,
     BusinessesModule,
+    UsersModule,
   ],
   controllers: [AdminController],
   providers: [AdminService, UsersService],

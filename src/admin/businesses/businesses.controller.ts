@@ -1,17 +1,22 @@
-import { Controller, Get, Body, Patch, Param } from '@nestjs/common';
+import { Controller, Get, Body, Patch, Param, Query } from '@nestjs/common';
 import { BusinessesService } from './businesses.service';
 import { DisapproveBusinessDto } from './dto/business.dto';
 import { UserRole } from '../admins/dto/admins.dto';
 import { Roles } from '../roles.decorator';
-import { ApiBearerAuth } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
+
 @ApiBearerAuth()
 @Controller('admin/businesses')
 export class BusinessesController {
   constructor(private readonly businessesService: BusinessesService) {}
 
   @Get()
-  findAll() {
-    return this.businessesService.findAll();
+  @ApiQuery({
+    name: 'isEmailVerified',
+    required: false,
+  })
+  findAll(@Query('isEmailVerified') isEmailVerified?: boolean) {
+    return this.businessesService.findAll(isEmailVerified);
   }
 
   @Get(':id')
