@@ -86,3 +86,32 @@ export class ChangePasswordDto {
   @IsString()
   confirmNewPassword: string;
 }
+
+export class BusinessSignUpDto {
+  @ApiProperty()
+  @IsString()
+  name: string;
+
+  @ApiProperty()
+  @IsEmail()
+  email: string;
+
+  @ApiProperty()
+  @IsPhoneNumber()
+  phone: string;
+
+  @ApiProperty()
+  @IsString()
+  password: string;
+
+  @ApiProperty()
+  @IsString()
+  confirmPassword: string;
+
+  @ApiProperty({ required: false, format: 'binary', type: 'string' })
+  logo?: File;
+
+  @ApiProperty()
+  @IsString()
+  businessAddress: string;
+}

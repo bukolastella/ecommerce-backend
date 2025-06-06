@@ -62,6 +62,12 @@ export class Users {
   @Column({ nullable: true, type: 'timestamp' })
   passwordChangedAt: Date | null;
 
+  @Column({ nullable: true })
+  avatar?: string;
+
+  @Column({ type: 'boolean', default: false })
+  businessVerfied: boolean;
+
   @BeforeInsert()
   async hashPasswordOnInsert() {
     if (this.password && !this.password.startsWith('$2b$12$')) {

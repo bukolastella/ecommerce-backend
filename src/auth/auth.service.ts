@@ -5,6 +5,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import {
+  BusinessSignUpDto,
   ChangePasswordDto,
   ForgotPasswordDto,
   LoginDto,
@@ -14,12 +15,13 @@ import {
   VerifyEmailDto,
 } from './dto/auth.dto';
 import { QueryFailedError, Repository } from 'typeorm';
-import { Users } from 'src/users/entities/users.entity';
+import { Users, UserType } from 'src/users/entities/users.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { MailService } from 'src/mail/mail.service';
 import { generateSecureSixDigitCode, hashString } from 'src/utils/data';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
+import { UploadService } from 'src/upload/upload.service';
 
 interface PostgreSQLError {
   code: string;
@@ -63,6 +65,7 @@ export class AuthService {
     @InjectRepository(Users)
     private readonly usersRepo: Repository<Users>,
     private readonly mailService: MailService,
+    private readonly uploadService: UploadService,
     private jwtService: JwtService,
   ) {}
 
@@ -226,6 +229,12 @@ export class AuthService {
         );
       }
 
+      if (user.type === UserType.STORE && !user.businessVerfied) {
+        throw new BadRequestException(
+          'Business not verified yet. Contact support for more info.',
+        );
+      }
+
       const token = await this.jwtService.signAsync({ sub: user.id });
 
       return { token, user };
@@ -280,5 +289,33 @@ export class AuthService {
     }
 
     return { message: 'Password changes successfully' };
+  };
+
+  businessSignUp = async (
+    dto: BusinessSignUpDto,
+    logo: Express.Multer.File,
+  ) => {
+    const { confirmPassword, ...rest } = dto;
+
+    if (rest.password !== confirmPassword) {
+      throw new BadRequestException('Passwords do not match');
+    }
+
+    let user: Users;
+
+    if (logo) {
+      const resultFile = await this.uploadService.uploadImage(logo);
+      user = this.usersRepo.create({ ...rest, avatar: resultFile });
+    }
+
+    user = this.usersRepo.create({ ...rest });
+
+    try {
+      await this.usersRepo.save(user);
+      await this.sendVerifyEmail({ email: dto.email });
+      return user;
+    } catch (error) {
+      this.handleDatabaseError(error);
+    }
   };
 }

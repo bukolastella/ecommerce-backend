@@ -6,10 +6,13 @@ import {
   HttpStatus,
   Post,
   Request,
+  UploadedFile,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import {
+  BusinessSignUpDto,
   ChangePasswordDto,
   ForgotPasswordDto,
   LoginDto,
@@ -19,7 +22,8 @@ import {
   VerifyEmailDto,
 } from './dto/auth.dto';
 import { AuthGuard } from './auth.guard';
-import { ApiBearerAuth } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiConsumes } from '@nestjs/swagger';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller('auth')
 export class AuthController {
@@ -66,6 +70,17 @@ export class AuthController {
   @ApiBearerAuth('access-token')
   getProfile(@Request() req: RequestWithUser): any {
     return req.user;
+  }
+
+  @HttpCode(HttpStatus.CREATED)
+  @Post('business/signup')
+  @ApiConsumes('multipart/form-data')
+  @UseInterceptors(FileInterceptor('logo'))
+  businessSignUp(
+    @Body() dto: BusinessSignUpDto,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    return this.authService.businessSignUp(dto, file);
   }
 }
 

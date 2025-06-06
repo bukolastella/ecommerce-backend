@@ -7,11 +7,13 @@ import { Users } from 'src/users/entities/users.entity';
 import { MailModule } from 'src/mail/mail.module';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
+import { UploadModule } from 'src/upload/upload.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Users]),
     MailModule,
+    UploadModule,
     JwtModule.registerAsync({
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({

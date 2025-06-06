@@ -8,6 +8,7 @@ import { UsersModule } from './users/users.module';
 import { Users } from './users/entities/users.entity';
 import { MailService } from './mail/mail.service';
 import { MailModule } from './mail/mail.module';
+import { UploadModule } from './upload/upload.module';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { MailModule } from './mail/mail.module';
     AuthModule,
     UsersModule,
     MailModule,
+    UploadModule,
   ],
   controllers: [AppController],
   providers: [AppService, MailService],
