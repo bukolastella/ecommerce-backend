@@ -159,7 +159,6 @@ export class UserSerializerInterceptor implements NestInterceptor {
     // isAdminViewing = false,
   ): Record<string, unknown> {
     const targetUserType = user.type;
-    console.log(user, 'uu', targetUserType);
 
     const baseFields: Record<string, unknown> = {
       id: user.id,

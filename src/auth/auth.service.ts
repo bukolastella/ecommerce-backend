@@ -218,7 +218,7 @@ export class AuthService {
     try {
       const user = await this.findUserByEmail(email);
 
-      if (!(await bcrypt.compare(password, user.password))) {
+      if (user.password && !(await bcrypt.compare(password, user.password))) {
         throw new UnauthorizedException('Incorrect email or password!');
       }
 

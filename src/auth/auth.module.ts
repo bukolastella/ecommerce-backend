@@ -9,6 +9,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { UploadModule } from 'src/upload/upload.module';
 import { AuthGuard } from './auth.guard';
+import { GoogleStrategy } from './google.strategy';
 
 @Module({
   imports: [
@@ -25,7 +26,7 @@ import { AuthGuard } from './auth.guard';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, UsersService, AuthGuard],
+  providers: [AuthService, UsersService, AuthGuard, GoogleStrategy],
   exports: [
     AuthService,
     AuthGuard,

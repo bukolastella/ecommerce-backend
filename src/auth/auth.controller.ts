@@ -1,10 +1,14 @@
 import {
   Body,
   Controller,
+  Get,
   HttpCode,
   HttpStatus,
+  NotFoundException,
   Post,
+  Req,
   UploadedFile,
+  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
@@ -20,10 +24,16 @@ import {
 } from './dto/auth.dto';
 import { ApiConsumes } from '@nestjs/swagger';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { AuthGuard } from '@nestjs/passport';
+import { RequestWithUser } from 'src/profile/profile.controller';
+import { JwtService } from '@nestjs/jwt';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private authService: AuthService) {}
+  constructor(
+    private authService: AuthService,
+    private jwtService: JwtService,
+  ) {}
 
   @HttpCode(HttpStatus.CREATED)
   @Post('signup')
@@ -70,5 +80,29 @@ export class AuthController {
     @UploadedFile() file: Express.Multer.File,
   ) {
     return this.authService.businessSignUp(dto, file);
+  }
+
+  @Get('google')
+  @UseGuards(AuthGuard('google'))
+  async googleAuth() {
+    // initiates Google OAuth2 login flow
+    // (never called because Passport redirects automatically)
+  }
+
+  @Get('google/callback')
+  @UseGuards(AuthGuard('google'))
+  async googleAuthRedirect(@Req() req: RequestWithUser) {
+    const user = req.user;
+
+    if (!user) {
+      throw new NotFoundException('No user not found');
+    }
+
+    const token = await this.jwtService.signAsync({ sub: user.id });
+
+    return {
+      token,
+      user,
+    };
   }
 }

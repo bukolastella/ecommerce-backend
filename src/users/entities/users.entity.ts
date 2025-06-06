@@ -15,6 +15,11 @@ export enum UserType {
   ADMIN = 'admin',
 }
 
+export enum AuthProvider {
+  local = 'local',
+  google = 'google',
+}
+
 @Entity()
 export class Users {
   @PrimaryGeneratedColumn()
@@ -40,8 +45,8 @@ export class Users {
   isEmailVerfied: boolean;
 
   @Exclude()
-  @Column({ nullable: false })
-  password: string;
+  @Column({ nullable: true, type: 'text' })
+  password: string | null;
 
   @Exclude()
   @Column({ nullable: true, type: 'varchar' })
@@ -71,6 +76,10 @@ export class Users {
 
   @Column({ nullable: true, type: 'text' })
   role: UserRole | null;
+
+  @Exclude()
+  @Column({ type: 'enum', enum: AuthProvider, default: AuthProvider.local })
+  provider: AuthProvider;
 
   @BeforeInsert()
   async hashPasswordOnInsert() {
