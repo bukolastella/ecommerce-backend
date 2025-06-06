@@ -9,6 +9,7 @@ import { Users } from './users/entities/users.entity';
 import { MailService } from './mail/mail.service';
 import { MailModule } from './mail/mail.module';
 import { UploadModule } from './upload/upload.module';
+import { AdminModule } from './admin/admin.module';
 
 @Module({
   imports: [
@@ -33,6 +34,7 @@ import { UploadModule } from './upload/upload.module';
     UsersModule,
     MailModule,
     UploadModule,
+    AdminModule,
   ],
   controllers: [AppController],
   providers: [AppService, MailService],

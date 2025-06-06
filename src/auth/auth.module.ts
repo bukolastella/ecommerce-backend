@@ -25,5 +25,6 @@ import { UploadModule } from 'src/upload/upload.module';
   ],
   controllers: [AuthController],
   providers: [AuthService, UsersService],
+  exports: [AuthService],
 })
 export class AuthModule {}

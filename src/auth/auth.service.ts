@@ -139,7 +139,7 @@ export class AuthService {
     });
   }
 
-  private handleDatabaseError(error: unknown): never {
+  handleDatabaseError(error: unknown): never {
     if (error instanceof QueryFailedError) {
       const dbError = error.driverError as PostgreSQLError;
 
@@ -308,7 +308,7 @@ export class AuthService {
       user = this.usersRepo.create({ ...rest, avatar: resultFile });
     }
 
-    user = this.usersRepo.create({ ...rest });
+    user = this.usersRepo.create({ ...rest, type: UserType.STORE });
 
     try {
       await this.usersRepo.save(user);

@@ -7,6 +7,7 @@ import {
 } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { Exclude } from 'class-transformer';
+import { UserRole } from 'src/admin/dto/admin.dto';
 
 export enum UserType {
   USER = 'user',
@@ -25,7 +26,7 @@ export class Users {
   @Column({ unique: true })
   email: string;
 
-  @Column({ nullable: false })
+  @Column({ nullable: true })
   phone: string;
 
   @Column({
@@ -67,6 +68,9 @@ export class Users {
 
   @Column({ type: 'boolean', default: false })
   businessVerfied: boolean;
+
+  @Column({ nullable: true, type: 'text' })
+  role: UserRole | null;
 
   @BeforeInsert()
   async hashPasswordOnInsert() {
