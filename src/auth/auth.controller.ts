@@ -67,7 +67,7 @@ export class AuthController {
 
   @UseGuards(AuthGuard)
   @Get('profile')
-  @ApiBearerAuth('access-token')
+  @ApiBearerAuth()
   getProfile(@Request() req: RequestWithUser): any {
     return req.user;
   }

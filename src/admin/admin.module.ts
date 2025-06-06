@@ -8,6 +8,9 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { MailModule } from 'src/mail/mail.module';
 import { AdminsModule } from './admins/admins.module';
 import { BusinessesModule } from './businesses/businesses.module';
+import { APP_GUARD } from '@nestjs/core';
+import { RolesGuard } from './roles.guard';
+import { AuthGuard } from 'src/auth/auth.guard';
 
 @Module({
   imports: [
@@ -18,6 +21,17 @@ import { BusinessesModule } from './businesses/businesses.module';
     BusinessesModule,
   ],
   controllers: [AdminController],
-  providers: [AdminService, UsersService],
+  providers: [
+    AdminService,
+    UsersService,
+    {
+      provide: APP_GUARD,
+      useClass: AuthGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: RolesGuard,
+    },
+  ],
 })
 export class AdminModule {}

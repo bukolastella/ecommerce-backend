@@ -9,10 +9,13 @@ import {
   Post,
 } from '@nestjs/common';
 import { AdminsService } from './admins.service';
-import { ApiParam } from '@nestjs/swagger';
-import { CreateAdminDto, EditAdminDto } from './dto/admins.dto';
+import { ApiBearerAuth, ApiParam } from '@nestjs/swagger';
+import { CreateAdminDto, EditAdminDto, UserRole } from './dto/admins.dto';
+import { Roles } from '../roles.decorator';
 
+@ApiBearerAuth()
 @Controller('admin')
+@Roles(UserRole.SUPER_ADMIN)
 export class AdminsController {
   constructor(private readonly adminsService: AdminsService) {}
 

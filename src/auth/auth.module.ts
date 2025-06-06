@@ -8,6 +8,7 @@ import { MailModule } from 'src/mail/mail.module';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { UploadModule } from 'src/upload/upload.module';
+import { AuthGuard } from './auth.guard';
 
 @Module({
   imports: [
@@ -24,7 +25,12 @@ import { UploadModule } from 'src/upload/upload.module';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, UsersService],
-  exports: [AuthService],
+  providers: [AuthService, UsersService, AuthGuard],
+  exports: [
+    AuthService,
+    AuthGuard,
+    JwtModule,
+    TypeOrmModule.forFeature([Users]),
+  ],
 })
 export class AuthModule {}
