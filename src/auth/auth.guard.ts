@@ -4,10 +4,11 @@ import {
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
-import { Reflector } from '@nestjs/core';
+import { Reflector, RouteTree } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Request } from 'express';
+import { RequestWithUser } from 'src/profile/profile.controller';
 import { IS_PUBLIC_KEY } from 'src/public.decorator';
 import { Users } from 'src/users/entities/users.entity';
 import { Repository } from 'typeorm';
@@ -37,7 +38,14 @@ export class AuthGuard implements CanActivate {
       return true;
     }
 
-    const request: Request = context.switchToHttp().getRequest<Request>();
+    const request = context.switchToHttp().getRequest<RequestWithUser>();
+    const path: string = (request.route as RouteTree).path || request.url || '';
+
+    if (path.startsWith('/auth')) {
+      // Skip guard for auth routes
+      return true;
+    }
+
     const token = this.extractTokenFromHeader(request);
     if (!token) {
       throw new UnauthorizedException();

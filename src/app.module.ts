@@ -10,8 +10,11 @@ import { MailService } from './mail/mail.service';
 import { MailModule } from './mail/mail.module';
 import { UploadModule } from './upload/upload.module';
 import { AdminModule } from './admin/admin.module';
-import { APP_INTERCEPTOR } from '@nestjs/core';
+import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { UserSerializerInterceptor } from './users/user-serializer.interceptor';
+import { AuthGuard } from './auth/auth.guard';
+import { RolesGuard } from './admin/roles.guard';
+import { ProfileModule } from './profile/profile.module';
 
 @Module({
   imports: [
@@ -37,11 +40,20 @@ import { UserSerializerInterceptor } from './users/user-serializer.interceptor';
     MailModule,
     UploadModule,
     AdminModule,
+    ProfileModule,
   ],
   controllers: [AppController],
   providers: [
     AppService,
     MailService,
+    {
+      provide: APP_GUARD,
+      useClass: AuthGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: RolesGuard,
+    },
     {
       provide: APP_INTERCEPTOR,
       useClass: UserSerializerInterceptor,

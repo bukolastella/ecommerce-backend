@@ -1,9 +1,9 @@
 import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
-import { Reflector } from '@nestjs/core';
+import { Reflector, RouteTree } from '@nestjs/core';
 import { UserRole } from './admins/dto/admins.dto';
 import { ROLES_KEY } from './roles.decorator';
-import { Users } from 'src/users/entities/users.entity';
 import { IS_PUBLIC_KEY } from 'src/public.decorator';
+import { RequestWithUser } from 'src/profile/profile.controller';
 
 @Injectable()
 export class RolesGuard implements CanActivate {
@@ -19,6 +19,13 @@ export class RolesGuard implements CanActivate {
       return true;
     }
 
+    const request = context.switchToHttp().getRequest<RequestWithUser>();
+    const path: string = (request.route as RouteTree).path || request.url || '';
+
+    if (!path.startsWith('/admin')) {
+      return true; // Skip guard for non-admin routes
+    }
+
     const requiredRoles = this.reflector.getAllAndOverride<UserRole[]>(
       ROLES_KEY,
       [context.getHandler(), context.getClass()],
@@ -26,8 +33,8 @@ export class RolesGuard implements CanActivate {
     if (!requiredRoles) {
       return true;
     }
-    const { user } = context.switchToHttp().getRequest<{ user: Users }>();
+    const { user } = request;
 
-    return requiredRoles.some((role) => user.role?.includes(role));
+    return requiredRoles.some((role) => user?.role?.includes(role));
   }
 }

@@ -1,13 +1,10 @@
 import {
   Body,
   Controller,
-  Get,
   HttpCode,
   HttpStatus,
   Post,
-  Request,
   UploadedFile,
-  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
@@ -21,12 +18,9 @@ import {
   SignUpDto,
   VerifyEmailDto,
 } from './dto/auth.dto';
-import { AuthGuard } from './auth.guard';
-import { ApiBearerAuth, ApiConsumes } from '@nestjs/swagger';
+import { ApiConsumes } from '@nestjs/swagger';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { Public } from 'src/public.decorator';
 
-@Public()
 @Controller('auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
@@ -67,13 +61,6 @@ export class AuthController {
     return this.authService.changePassword(dto);
   }
 
-  @UseGuards(AuthGuard)
-  @Get('profile')
-  @ApiBearerAuth()
-  getProfile(@Request() req: RequestWithUser): any {
-    return req.user;
-  }
-
   @HttpCode(HttpStatus.CREATED)
   @Post('business/signup')
   @ApiConsumes('multipart/form-data')
@@ -84,8 +71,4 @@ export class AuthController {
   ) {
     return this.authService.businessSignUp(dto, file);
   }
-}
-
-interface RequestWithUser extends Express.Request {
-  user?: any;
 }
