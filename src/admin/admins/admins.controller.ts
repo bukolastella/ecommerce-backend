@@ -4,12 +4,11 @@ import {
   Delete,
   Get,
   Param,
-  ParseIntPipe,
   Patch,
   Post,
 } from '@nestjs/common';
 import { AdminsService } from './admins.service';
-import { ApiBearerAuth, ApiParam } from '@nestjs/swagger';
+import { ApiBearerAuth } from '@nestjs/swagger';
 import { CreateAdminDto, EditAdminDto, UserRole } from './dto/admins.dto';
 import { Roles } from '../roles.decorator';
 
@@ -30,11 +29,7 @@ export class AdminsController {
   }
 
   @Get('admins/:adminId')
-  @ApiParam({
-    name: 'adminId',
-    example: 1,
-  })
-  getSingleAdmin(@Param('adminId', ParseIntPipe) adminId: number) {
+  getSingleAdmin(@Param('adminId') adminId: number) {
     return this.adminsService.getSingleAdmin(adminId);
   }
 

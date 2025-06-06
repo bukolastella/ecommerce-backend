@@ -10,6 +10,8 @@ import { MailService } from './mail/mail.service';
 import { MailModule } from './mail/mail.module';
 import { UploadModule } from './upload/upload.module';
 import { AdminModule } from './admin/admin.module';
+import { APP_INTERCEPTOR } from '@nestjs/core';
+import { UserSerializerInterceptor } from './users/user-serializer.interceptor';
 
 @Module({
   imports: [
@@ -37,6 +39,13 @@ import { AdminModule } from './admin/admin.module';
     AdminModule,
   ],
   controllers: [AppController],
-  providers: [AppService, MailService],
+  providers: [
+    AppService,
+    MailService,
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: UserSerializerInterceptor,
+    },
+  ],
 })
 export class AppModule {}

@@ -24,7 +24,9 @@ import {
 import { AuthGuard } from './auth.guard';
 import { ApiBearerAuth, ApiConsumes } from '@nestjs/swagger';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { Public } from 'src/public.decorator';
 
+@Public()
 @Controller('auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
