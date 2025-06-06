@@ -7,7 +7,7 @@ import {
 } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { Exclude } from 'class-transformer';
-import { UserRole } from 'src/admin/dto/admin.dto';
+import { UserRole } from 'src/admin/admins/dto/admins.dto';
 
 export enum UserType {
   USER = 'user',
