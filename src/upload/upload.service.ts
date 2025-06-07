@@ -5,7 +5,6 @@ import {
   UploadApiResponse,
 } from 'cloudinary';
 import { randomUUID } from 'crypto';
-import * as path from 'path';
 
 @Injectable()
 export class UploadService {
@@ -14,12 +13,11 @@ export class UploadService {
   ) {}
 
   async uploadImage(file: Express.Multer.File): Promise<string> {
-    const { originalname, buffer } = file as {
+    const { buffer } = file as {
       originalname: string;
       buffer: Buffer;
     };
-    const fileExtension = path.extname(originalname);
-    const key = `uploads/${randomUUID()}${fileExtension}`;
+    const key = `uploads/${randomUUID()}`;
 
     const result = await new Promise<UploadApiResponse>((resolve, reject) => {
       this.cloudinary.uploader

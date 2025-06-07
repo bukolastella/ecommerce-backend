@@ -15,6 +15,7 @@ import { UserSerializerInterceptor } from './users/user-serializer.interceptor';
 import { AuthGuard } from './auth/auth.guard';
 import { RolesGuard } from './admin/roles.guard';
 import { ProfileModule } from './profile/profile.module';
+import { Category } from './admin/category/entities/category.entity';
 
 @Module({
   imports: [
@@ -31,7 +32,7 @@ import { ProfileModule } from './profile/profile.module';
         username: configService.get('DB_USERNAME'),
         password: configService.get('DB_PASSWORD'),
         database: configService.get('DB_NAME'),
-        entities: [Users],
+        entities: [Users, Category],
         synchronize: true,
       }),
     }),

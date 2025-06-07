@@ -9,6 +9,7 @@ import { MailModule } from 'src/mail/mail.module';
 import { AdminsModule } from './admins/admins.module';
 import { BusinessesModule } from './businesses/businesses.module';
 import { UsersModule } from './users/users.module';
+import { CategoryModule } from './category/category.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { UsersModule } from './users/users.module';
     AdminsModule,
     BusinessesModule,
     UsersModule,
+    CategoryModule,
   ],
   controllers: [AdminController],
   providers: [AdminService, UsersService],

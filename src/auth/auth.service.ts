@@ -23,7 +23,7 @@ import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { UploadService } from 'src/upload/upload.service';
 
-interface PostgreSQLError {
+export interface PostgreSQLError {
   code: string;
   detail?: string;
   message: string;
