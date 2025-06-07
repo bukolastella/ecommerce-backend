@@ -1,15 +1,34 @@
-import { Controller } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  UploadedFile,
+  UseInterceptors,
+} from '@nestjs/common';
 import { UploadService } from './upload.service';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { ApiBearerAuth, ApiBody, ApiConsumes } from '@nestjs/swagger';
 
+@ApiBearerAuth()
 @Controller('upload')
 export class UploadController {
   constructor(private readonly uploadService: UploadService) {}
 
-  // // In UploadController (or wherever you call uploadImage):
-  // @UseInterceptors(FileInterceptor('avatar'))
-  // uploadAvatar(
-  //   @UploadedFile() file: Express.Multer.File, // <-- explicitly typed
-  // ) {
-  //   return this.uploadService.uploadImage(file);
-  // }
+  @Post()
+  @UseInterceptors(FileInterceptor('file'))
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      required: ['file'],
+      properties: {
+        file: {
+          type: 'string',
+          format: 'binary',
+        },
+      },
+    },
+  })
+  uploadAvatar(@UploadedFile() file: Express.Multer.File) {
+    return this.uploadService.uploadImage(file);
+  }
 }

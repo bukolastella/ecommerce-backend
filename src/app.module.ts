@@ -16,6 +16,8 @@ import { AuthGuard } from './auth/auth.guard';
 import { RolesGuard } from './admin/roles.guard';
 import { ProfileModule } from './profile/profile.module';
 import { Category } from './admin/category/entities/category.entity';
+import { ProductModule } from './business/product/product.module';
+import { Product } from './business/product/entities/product.entity';
 
 @Module({
   imports: [
@@ -32,7 +34,7 @@ import { Category } from './admin/category/entities/category.entity';
         username: configService.get('DB_USERNAME'),
         password: configService.get('DB_PASSWORD'),
         database: configService.get('DB_NAME'),
-        entities: [Users, Category],
+        entities: [Users, Category, Product],
         synchronize: true,
       }),
     }),
@@ -42,6 +44,7 @@ import { Category } from './admin/category/entities/category.entity';
     UploadModule,
     AdminModule,
     ProfileModule,
+    ProductModule,
   ],
   controllers: [AppController],
   providers: [
