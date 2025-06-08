@@ -1,4 +1,5 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Users } from 'src/users/entities/users.entity';
+import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity()
 export class Product {
@@ -26,6 +27,13 @@ export class Product {
   @Column({ type: 'text', array: true })
   images: string[];
 
-  @Column({ type: 'int' })
-  businessId: number;
+  // @Column({ type: 'int' })
+  // businessId: number;
+
+  @ManyToOne(() => Users, {
+    eager: true,
+    onDelete: 'CASCADE',
+  })
+  // @JoinColumn({ name: 'businessId' })
+  owner: Users;
 }

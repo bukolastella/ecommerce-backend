@@ -22,11 +22,12 @@ import {
   SignUpDto,
   VerifyEmailDto,
 } from './dto/auth.dto';
-import { ApiConsumes } from '@nestjs/swagger';
+import { ApiBody, ApiConsumes } from '@nestjs/swagger';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { AuthGuard } from '@nestjs/passport';
 import { RequestWithUser } from 'src/profile/profile.controller';
 import { JwtService } from '@nestjs/jwt';
+import { IMAGE_UPLOAD_PIPE } from 'src/upload/fileValidators';
 
 @Controller('auth')
 export class AuthController {
@@ -74,10 +75,23 @@ export class AuthController {
   @HttpCode(HttpStatus.CREATED)
   @Post('business/signup')
   @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    description: 'Upload any image except SVG (max 1 MB)',
+    schema: {
+      type: 'object',
+      properties: {
+        file: {
+          type: 'string',
+          format: 'binary',
+        },
+      },
+    },
+  })
   @UseInterceptors(FileInterceptor('logo'))
   businessSignUp(
     @Body() dto: BusinessSignUpDto,
-    @UploadedFile() file: Express.Multer.File,
+    @UploadedFile(IMAGE_UPLOAD_PIPE)
+    file: Express.Multer.File,
   ) {
     return this.authService.businessSignUp(dto, file);
   }

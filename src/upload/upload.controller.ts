@@ -1,5 +1,8 @@
 import {
+  BadRequestException,
   Controller,
+  FileTypeValidator,
+  ParseFilePipe,
   Post,
   UploadedFile,
   UseInterceptors,
@@ -28,7 +31,26 @@ export class UploadController {
       },
     },
   })
-  uploadAvatar(@UploadedFile() file: Express.Multer.File) {
+  uploadAvatar(
+    @UploadedFile(
+      new ParseFilePipe({
+        validators: [
+          new FileTypeValidator({
+            fileType: /^image\/(?!svg\+xml).*$/,
+          }),
+        ],
+        exceptionFactory: (error) => {
+          if (error.includes('image/svg+xml') || error.includes('file type')) {
+            return new BadRequestException(
+              'Only image files (excluding SVG) are allowed.',
+            );
+          }
+          return new BadRequestException(error);
+        },
+      }),
+    )
+    file: Express.Multer.File,
+  ) {
     return this.uploadService.uploadImage(file);
   }
 }

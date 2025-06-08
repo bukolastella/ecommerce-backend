@@ -34,7 +34,7 @@ export class ProductService {
     if (!cat) throw new BadRequestException('Category id not found');
 
     const hasNameByBusiness = await this.productRepo.find({
-      where: { businessId: businessId, name: productName },
+      where: { owner: { id: businessId }, name: productName },
     });
 
     if (hasNameByBusiness.length > 0)
@@ -51,7 +51,8 @@ export class ProductService {
     const product = this.productRepo.create({
       ...createProductDto,
       slug: slugify(`${createProductDto.name}-${businessId}`),
-      businessId,
+      // businessId,
+      owner: { id: businessId },
     });
 
     const saved = await this.productRepo.save(product);

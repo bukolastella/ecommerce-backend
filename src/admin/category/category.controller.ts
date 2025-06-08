@@ -17,6 +17,7 @@ import {
 } from './dto/category.dto';
 import { ApiBearerAuth, ApiConsumes } from '@nestjs/swagger';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { IMAGE_UPLOAD_PIPE } from 'src/upload/fileValidators';
 
 @ApiBearerAuth()
 @Controller('category')
@@ -29,7 +30,7 @@ export class CategoryController {
   @UseInterceptors(FileInterceptor('image'))
   create(
     @Body() createCategoryDto: CreateCategoryDto,
-    @UploadedFile() image: Express.Multer.File,
+    @UploadedFile(IMAGE_UPLOAD_PIPE) image: Express.Multer.File,
   ) {
     return this.categoryService.create(createCategoryDto, image);
   }
@@ -50,7 +51,7 @@ export class CategoryController {
   update(
     @Param('id') id: number,
     @Body() updateCategoryDto?: UpdateCategoryDto,
-    @UploadedFile() image?: Express.Multer.File,
+    @UploadedFile(IMAGE_UPLOAD_PIPE) image?: Express.Multer.File,
   ) {
     return this.categoryService.update(id, updateCategoryDto, image);
   }

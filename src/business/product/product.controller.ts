@@ -13,6 +13,7 @@ import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { RequestWithUser } from 'src/profile/profile.controller';
 import { ApiBearerAuth } from '@nestjs/swagger';
+import { Public } from 'src/public.decorator';
 
 @ApiBearerAuth()
 @Controller('product')
@@ -27,11 +28,13 @@ export class ProductController {
     return this.productService.create(createProductDto, req.user?.id);
   }
 
+  @Public()
   @Get()
   findAll() {
     return this.productService.findAll();
   }
 
+  @Public()
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.productService.findOne(+id);
