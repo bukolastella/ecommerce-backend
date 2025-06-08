@@ -4,16 +4,16 @@ import { RequestWithUser } from 'src/profile/profile.controller';
 import { ApiBearerAuth } from '@nestjs/swagger';
 
 @ApiBearerAuth()
-@Controller('like')
+@Controller('product')
 export class LikeController {
   constructor(private readonly likeService: LikeService) {}
 
-  @Post(':id')
+  @Post('like/:id')
   toggle(@Param('id') id: number, @Request() req: RequestWithUser) {
     return this.likeService.toggle(id, req.user?.id);
   }
 
-  @Get()
+  @Get('my-likes')
   likesByUser(@Request() req: RequestWithUser) {
     return this.likeService.likesByUser(req.user?.id);
   }

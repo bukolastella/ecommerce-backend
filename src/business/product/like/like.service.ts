@@ -24,14 +24,9 @@ export class LikeService {
       where: { product: { id }, userId },
     });
 
-    console.log(likedProduct, 'likedProduct');
-
     if (likedProduct) {
-      console.log('pp');
-
       await this.productLikeRepo.delete(id);
     } else {
-      console.log('ppxx');
       const temp = this.productLikeRepo.create({
         product: { id: id },
         userId,
