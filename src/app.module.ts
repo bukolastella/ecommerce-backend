@@ -5,7 +5,6 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
-import { Users } from './users/entities/users.entity';
 import { MailService } from './mail/mail.service';
 import { MailModule } from './mail/mail.module';
 import { UploadModule } from './upload/upload.module';
@@ -15,9 +14,7 @@ import { UserSerializerInterceptor } from './users/user-serializer.interceptor';
 import { AuthGuard } from './auth/auth.guard';
 import { RolesGuard } from './admin/roles.guard';
 import { ProfileModule } from './profile/profile.module';
-import { Category } from './admin/category/entities/category.entity';
 import { ProductModule } from './business/product/product.module';
-import { Product } from './business/product/entities/product.entity';
 
 @Module({
   imports: [
@@ -34,8 +31,9 @@ import { Product } from './business/product/entities/product.entity';
         username: configService.get('DB_USERNAME'),
         password: configService.get('DB_PASSWORD'),
         database: configService.get('DB_NAME'),
-        entities: [Users, Category, Product],
+        // entities: [Users, Category, Product, ProductLike],
         synchronize: true,
+        autoLoadEntities: true,
       }),
     }),
     AuthModule,

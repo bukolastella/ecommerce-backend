@@ -35,5 +35,5 @@ export class Product {
     onDelete: 'CASCADE',
   })
   // @JoinColumn({ name: 'businessId' })
-  owner: Users;
+  business: Users;
 }
