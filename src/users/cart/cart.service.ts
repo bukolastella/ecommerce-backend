@@ -23,6 +23,14 @@ export class CartService {
 
     if (!product) throw new BadRequestException("Can't find product");
 
+    const inCartAlready = await this.cartRepo.findOne({
+      where: { product: { id: productId }, userId },
+    });
+
+    if (inCartAlready) throw new BadRequestException('Already in cart');
+    if (quantity > product.quantity)
+      throw new BadRequestException('Not enough quantity');
+
     const temp = this.cartRepo.create({
       product: { id: productId },
       userId,
