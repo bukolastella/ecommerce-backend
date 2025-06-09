@@ -28,7 +28,14 @@ export class OrderItem {
   @Column()
   currency: string;
 
-  @Column({ type: 'decimal', scale: 2 })
+  @Column({
+    type: 'decimal',
+    scale: 2,
+    transformer: {
+      to: (value: number) => value,
+      from: (value: string) => parseFloat(value),
+    },
+  })
   amount: number;
 
   @Exclude()

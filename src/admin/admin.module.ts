@@ -10,6 +10,7 @@ import { AdminsModule } from './admins/admins.module';
 import { BusinessesModule } from './businesses/businesses.module';
 import { UsersModule } from './users/users.module';
 import { CategoryModule } from './category/category.module';
+import { TransactionModule } from 'src/transaction/transaction.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { CategoryModule } from './category/category.module';
     BusinessesModule,
     UsersModule,
     CategoryModule,
+    TransactionModule,
   ],
   controllers: [AdminController],
   providers: [AdminService, UsersService],

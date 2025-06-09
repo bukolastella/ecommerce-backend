@@ -20,11 +20,12 @@ export class TransactionService {
   ) {}
 
   async withdrawal(dto: WithdrawalTransactionDto) {
+    if (dto.to === TransactionTo.business && !dto.identityId)
+      throw new BadRequestException('Identity Id is required');
     const temp = this.transRepo.create({
       ...dto,
       type: TransactionType.withdrawal,
       from: TransactionFrom.system,
-      to: TransactionTo.wallet,
     });
 
     const saved = await this.transRepo.save(temp);
@@ -34,7 +35,6 @@ export class TransactionService {
 
   async findAll(dto: FilterTransactionDto) {
     const { businessId, orderId, to, type } = dto;
-    console.log(businessId, 'businessId');
 
     const whereCondition: FindOptionsWhere<Transaction> = {};
 
@@ -78,5 +78,53 @@ export class TransactionService {
     });
 
     return transactions;
+  }
+
+  async transactionStatForBusiness(businessId?: number) {
+    if (!businessId) throw new BadRequestException("Can't find business id");
+
+    const transactions = await this.transRepo.find({
+      where: {
+        to: TransactionTo.business,
+        order: { businessId },
+      },
+    });
+
+    const withdrawTransactions = await this.transRepo.find({
+      where: {
+        type: TransactionType.withdrawal,
+        from: TransactionFrom.system,
+        to: TransactionTo.business,
+        identityId: businessId,
+      },
+    });
+
+    const totalRevenue = transactions.reduce((prev, curr) => {
+      return curr.type === TransactionType.add ? prev + curr.amount : 0;
+    }, 0);
+
+    const withdrawn = withdrawTransactions.reduce((prev, curr) => {
+      return prev + curr.amount;
+    }, 0);
+
+    return { totalRevenue, withdrawn, available: totalRevenue - withdrawn };
+  }
+
+  async transactionStatForAdmin() {
+    const transactions = await this.transRepo.find({
+      where: {
+        to: TransactionTo.admin,
+      },
+    });
+
+    const totalRevenue = transactions.reduce((prev, curr) => {
+      return curr.type === TransactionType.add ? prev + curr.amount : prev + 0;
+    }, 0);
+
+    const withdrawn = transactions.reduce((prev, curr) => {
+      return curr.type === TransactionType.withdrawal ? prev + curr.amount : 0;
+    }, 0);
+
+    return { totalRevenue, withdrawn, available: totalRevenue - withdrawn };
   }
 }

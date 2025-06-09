@@ -28,9 +28,9 @@ export class FilterTransactionDto {
 }
 
 export class WithdrawalTransactionDto {
-  // @ApiProperty({ enum: TransactionTo })
-  // @IsEnum(TransactionTo)
-  // to: TransactionTo;
+  @ApiProperty({ enum: TransactionTo })
+  @IsEnum(TransactionTo)
+  to: TransactionTo;
 
   // @ApiProperty({ enum: TransactionFrom })
   // @IsEnum(TransactionFrom)
@@ -39,4 +39,7 @@ export class WithdrawalTransactionDto {
   @ApiProperty()
   @IsNumber()
   amount: number;
+
+  @ApiProperty({ required: false })
+  identityId: number;
 }

@@ -16,6 +16,11 @@ export class BusinessController {
     return this.transService.findAllForBusiness(req.user?.id);
   }
 
+  @Get('transactions/stat')
+  transactionStatForBusiness(@Request() req: RequestWithUser) {
+    return this.transService.transactionStatForBusiness(req.user?.id);
+  }
+
   @Get('transactions/:id')
   findOne(@Param('id') id: number) {
     return this.transService.findOne(+id);

@@ -18,7 +18,14 @@ export class Product {
   @Column({ type: 'text' })
   description: string;
 
-  @Column({ type: 'decimal', scale: 2 })
+  @Column({
+    type: 'decimal',
+    scale: 2,
+    transformer: {
+      to: (value: number) => value,
+      from: (value: string) => parseFloat(value),
+    },
+  })
   price: number;
 
   @Column({ type: 'int' })

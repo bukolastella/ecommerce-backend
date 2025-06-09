@@ -10,9 +10,6 @@ export enum TransactionType {
 export enum TransactionTo {
   admin = 'admin',
   business = 'business',
-
-  //   withdrawal
-  wallet = 'wallet',
 }
 
 export enum TransactionFrom {
@@ -42,9 +39,19 @@ export class Transaction {
   @Column({ type: 'enum', enum: TransactionFrom })
   from: TransactionFrom;
 
-  @Column({ type: 'decimal', scale: 2 })
+  @Column({
+    type: 'decimal',
+    scale: 2,
+    transformer: {
+      to: (value: number) => value,
+      from: (value: string) => parseFloat(value),
+    },
+  })
   amount: number;
 
-  @Column()
+  @Column({ nullable: true })
   percentShare?: string;
+
+  @Column({ nullable: true })
+  identityId?: number;
 }

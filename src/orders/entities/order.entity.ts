@@ -25,7 +25,14 @@ export class Order {
   @Column()
   currency: string;
 
-  @Column({ type: 'decimal', scale: 2 })
+  @Column({
+    type: 'decimal',
+    scale: 2,
+    transformer: {
+      to: (value: number) => value,
+      from: (value: string) => parseFloat(value),
+    },
+  })
   totalAmount: number;
 
   @Column({ type: 'enum', enum: OrderStatus })
