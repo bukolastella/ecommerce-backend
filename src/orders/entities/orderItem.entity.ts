@@ -28,7 +28,7 @@ export class OrderItem {
   @Column()
   currency: string;
 
-  @Column()
+  @Column({ type: 'decimal', scale: 2 })
   amount: number;
 
   @Exclude()

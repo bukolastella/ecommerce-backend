@@ -13,8 +13,12 @@ import { Users } from '../entities/users.entity';
 import { createHmac } from 'crypto';
 import { IncomingHttpHeaders } from 'http';
 import { Order, OrderStatus } from 'src/orders/entities/order.entity';
-import { OrderItem } from 'src/orders/entities/orderItem.entity';
 import { Product } from 'src/business/product/entities/product.entity';
+import {
+  TransactionFrom,
+  TransactionTo,
+  TransactionType,
+} from 'src/transaction/entities/transaction.entity';
 
 export type PaystackWebhookPayload = {
   event: string;
@@ -31,7 +35,21 @@ export type PaystackWebhookPayload = {
     channel: string;
     currency: string;
     ip_address: string;
-    metadata: { orders: Order[]; orderItems: OrderItem[] };
+    metadata: {
+      orders: Order[];
+      orderItems: {
+        businessId: number;
+        productId: number;
+        productName: string;
+        productSlug: string;
+        categoryId: number;
+        images: string[];
+        quantity: number;
+        amount: number;
+        cartId: number;
+        currency: string;
+      }[];
+    };
     fees_breakdown: null;
     log: null;
     fees: number;
@@ -202,6 +220,7 @@ export class CheckoutService {
     }));
 
     const orderItems = userCart.map((ev) => ({
+      businessId: ev.product.business.id,
       productId: ev.product.id,
       productName: ev.product.name,
       productSlug: ev.product.slug,
@@ -238,12 +257,34 @@ export class CheckoutService {
 
       if (event.event === 'charge.success') {
         const orderItems = event.data.metadata.orderItems;
-        const orders = event.data.metadata.orders.map((ev) => ({
-          ...ev,
-          orderItems: orderItems,
-        }));
-        const chartIds = orderItems.map((ev) => ev.cartId);
 
+        const orders = event.data.metadata.orders.map((ev) => {
+          const filteredOrderItems = orderItems.filter(
+            (item) => item.businessId === ev.businessId,
+          );
+          return {
+            ...ev,
+            orderItems: filteredOrderItems,
+            transaction: [
+              {
+                type: TransactionType.add,
+                to: TransactionTo.business,
+                from: TransactionFrom.order,
+                amount: 0.95 * ev.totalAmount,
+                percentShare: '95%',
+              },
+              {
+                type: TransactionType.add,
+                to: TransactionTo.admin,
+                from: TransactionFrom.order,
+                amount: 0.05 * ev.totalAmount,
+                percentShare: '5%',
+              },
+            ],
+          };
+        });
+
+        const chartIds = orderItems.map((ev) => ev.cartId);
         await this.orderRepo.save(orders);
 
         const products = await this.productRepo.find({
@@ -257,7 +298,6 @@ export class CheckoutService {
 
           product.quantity -= +orderedQuantity;
         });
-
         await this.productRepo.save(products);
         await this.cartRepo.delete(chartIds);
       }

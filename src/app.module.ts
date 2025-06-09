@@ -16,6 +16,8 @@ import { RolesGuard } from './admin/roles.guard';
 import { ProfileModule } from './profile/profile.module';
 import { ProductModule } from './business/product/product.module';
 import { OrdersModule } from './orders/orders.module';
+import { TransactionModule } from './transaction/transaction.module';
+import { BusinessModule } from './business/business.module';
 
 @Module({
   imports: [
@@ -45,6 +47,8 @@ import { OrdersModule } from './orders/orders.module';
     ProfileModule,
     ProductModule,
     OrdersModule,
+    TransactionModule,
+    BusinessModule,
   ],
   controllers: [AppController],
   providers: [
