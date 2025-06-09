@@ -8,9 +8,12 @@ import { ApiBearerAuth } from '@nestjs/swagger';
 export class LikeController {
   constructor(private readonly likeService: LikeService) {}
 
-  @Post('like/:id')
-  toggle(@Param('id') id: number, @Request() req: RequestWithUser) {
-    return this.likeService.toggle(id, req.user?.id);
+  @Post(':productId/like')
+  toggle(
+    @Param('productId') productId: number,
+    @Request() req: RequestWithUser,
+  ) {
+    return this.likeService.toggle(productId, req.user?.id);
   }
 
   @Get('my-likes')

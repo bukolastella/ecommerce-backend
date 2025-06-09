@@ -16,4 +16,7 @@ export class Cart {
   @Exclude()
   @Column()
   userId: number;
+
+  @Column()
+  quantity: number;
 }
