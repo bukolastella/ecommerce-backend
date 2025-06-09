@@ -15,6 +15,7 @@ import { AuthGuard } from './auth/auth.guard';
 import { RolesGuard } from './admin/roles.guard';
 import { ProfileModule } from './profile/profile.module';
 import { ProductModule } from './business/product/product.module';
+import { OrdersModule } from './orders/orders.module';
 
 @Module({
   imports: [
@@ -43,6 +44,7 @@ import { ProductModule } from './business/product/product.module';
     AdminModule,
     ProfileModule,
     ProductModule,
+    OrdersModule,
   ],
   controllers: [AppController],
   providers: [

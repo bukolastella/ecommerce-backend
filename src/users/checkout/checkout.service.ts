@@ -6,12 +6,15 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Cart } from '../cart/entities/cart.entity';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { CartService } from '../cart/cart.service';
 import { ConfigService } from '@nestjs/config';
 import { Users } from '../entities/users.entity';
 import { createHmac } from 'crypto';
 import { IncomingHttpHeaders } from 'http';
+import { Order, OrderStatus } from 'src/orders/entities/order.entity';
+import { OrderItem } from 'src/orders/entities/orderItem.entity';
+import { Product } from 'src/business/product/entities/product.entity';
 
 export type PaystackWebhookPayload = {
   event: string;
@@ -28,7 +31,7 @@ export type PaystackWebhookPayload = {
     channel: string;
     currency: string;
     ip_address: string;
-    metadata: string | null;
+    metadata: { orders: Order[]; orderItems: OrderItem[] };
     fees_breakdown: null;
     log: null;
     fees: number;
@@ -94,6 +97,10 @@ export class CheckoutService {
   constructor(
     @InjectRepository(Cart)
     private readonly cartRepo: Repository<Cart>,
+    @InjectRepository(Order)
+    private readonly orderRepo: Repository<Order>,
+    @InjectRepository(Product)
+    private readonly productRepo: Repository<Product>,
     private readonly cartService: CartService,
     private readonly configService: ConfigService,
   ) {
@@ -105,12 +112,15 @@ export class CheckoutService {
   async initializeTransaction(
     email: string,
     amount: number,
+    metadata: Record<string, any>,
   ): Promise<PaystackRes> {
     try {
       const payload = {
         email,
         amount,
         callback_url: 'https://hello.pstk.xyz/callback',
+        currency: 'NGN',
+        metadata,
       };
 
       const response = await fetch(this.paystackUrl, {
@@ -146,6 +156,9 @@ export class CheckoutService {
     const userId = user?.id;
     const userCart = await this.cartService.cartByUser(userId);
 
+    if (userCart.length === 0)
+      throw new BadRequestException('Nothing to checkout');
+
     for (const item of userCart) {
       if (item.quantity > item.product.quantity) {
         throw new BadRequestException(
@@ -158,14 +171,63 @@ export class CheckoutService {
       return prev + curr.quantity * curr.product.price;
     }, 0);
 
+    const groupedByBusiness = userCart.reduce(
+      (acc, item) => {
+        const businessId = item.product.business.id;
+
+        if (!acc[businessId]) {
+          acc[businessId] = {
+            business: item.product.business,
+            products: [],
+          };
+        }
+
+        acc[businessId].products.push(item);
+
+        return acc;
+      },
+      {} as Record<number, { business: Users; products: Cart[] }>,
+    );
+
+    const groupedArray = Object.values(groupedByBusiness);
+
+    const orders = groupedArray.map((ev) => ({
+      userId: user.id,
+      businessId: ev.business.id,
+      totalAmount: ev.products.reduce((prev, curr) => {
+        return prev + curr.quantity * curr.product.price;
+      }, 0),
+      status: OrderStatus.pending,
+      currency: 'NGN',
+    }));
+
+    const orderItems = userCart.map((ev) => ({
+      productId: ev.product.id,
+      productName: ev.product.name,
+      productSlug: ev.product.slug,
+      categoryId: ev.product.categoryId,
+      images: ev.product.images,
+      quantity: ev.quantity,
+      amount: ev.product.price,
+      cartId: ev.id,
+      currency: 'NGN',
+    }));
+
     const payRes = await this.initializeTransaction(
       user.email,
       amountToPay * 100,
+      {
+        orderItems,
+        orders,
+      },
     );
     return { amountToPay, url: payRes.data?.authorization_url };
   }
 
-  paystackWebhook(dto: PaystackWebhookPayload, headers: IncomingHttpHeaders) {
+  async paystackWebhook(
+    dto: PaystackWebhookPayload,
+    headers: IncomingHttpHeaders,
+  ) {
     const hash = createHmac('sha512', this.paystackSecretKey)
       .update(JSON.stringify(dto))
       .digest('hex');
@@ -173,8 +235,31 @@ export class CheckoutService {
     if (hash == headers['x-paystack-signature']) {
       // Retrieve the request's body
       const event = dto;
+
       if (event.event === 'charge.success') {
-        //create an order
+        const orderItems = event.data.metadata.orderItems;
+        const orders = event.data.metadata.orders.map((ev) => ({
+          ...ev,
+          orderItems: orderItems,
+        }));
+        const chartIds = orderItems.map((ev) => ev.cartId);
+
+        await this.orderRepo.save(orders);
+
+        const products = await this.productRepo.find({
+          where: { id: In(orderItems.map((item) => item.productId)) },
+        });
+
+        products.forEach((product) => {
+          const orderedQuantity =
+            orderItems.find((item) => +item.productId === product.id)
+              ?.quantity || 0;
+
+          product.quantity -= +orderedQuantity;
+        });
+
+        await this.productRepo.save(products);
+        await this.cartRepo.delete(chartIds);
       }
     }
     return null;
