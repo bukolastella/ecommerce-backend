@@ -18,6 +18,7 @@ import { ProductModule } from './business/product/product.module';
 import { OrdersModule } from './orders/orders.module';
 import { TransactionModule } from './transaction/transaction.module';
 import { BusinessModule } from './business/business.module';
+import { UserTypeGuard } from './auth/user-type.guard';
 
 @Module({
   imports: [
@@ -57,6 +58,10 @@ import { BusinessModule } from './business/business.module';
     {
       provide: APP_GUARD,
       useClass: AuthGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: UserTypeGuard,
     },
     {
       provide: APP_GUARD,
