@@ -6,6 +6,7 @@ import {
   Param,
   Request,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { TransactionService } from './transaction.service';
 import {
@@ -13,12 +14,17 @@ import {
   WithdrawalTransactionDto,
 } from './dto/transaction.dto';
 import { ApiBearerAuth } from '@nestjs/swagger';
+import { isUserType } from 'src/auth/userType.decorator';
+import { UserType } from 'src/users/entities/users.entity';
+import { UserTypeGuard } from 'src/auth/user-type.guard';
 
 @ApiBearerAuth()
 @Controller('transaction')
 export class TransactionController {
   constructor(private readonly transactionService: TransactionService) {}
 
+  @UseGuards(UserTypeGuard)
+  @isUserType(UserType.ADMIN, UserType.BUSINESS)
   @Post()
   withdrawal(@Body() dto: WithdrawalTransactionDto) {
     return this.transactionService.withdrawal(dto);

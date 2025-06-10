@@ -22,7 +22,25 @@ async function bootstrap() {
       type: 'http',
       scheme: 'bearer',
       bearerFormat: 'JWT',
-      description: 'Enter your JWT token here (format: Bearer <token>)',
+      description: 'Enter your JWT token here',
+    })
+    .addSecurity('adminToken', {
+      type: 'http',
+      scheme: 'bearer',
+      bearerFormat: 'JWT',
+      description: 'JWT token for Admin',
+    })
+    .addSecurity('businessToken', {
+      type: 'http',
+      scheme: 'bearer',
+      bearerFormat: 'JWT',
+      description: 'JWT token for Business',
+    })
+    .addSecurity('userToken', {
+      type: 'http',
+      scheme: 'bearer',
+      bearerFormat: 'JWT',
+      description: 'JWT token for Users',
     })
     // .addTag('e-commerce')
     .build();

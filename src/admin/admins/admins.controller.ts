@@ -8,11 +8,12 @@ import {
   Post,
 } from '@nestjs/common';
 import { AdminsService } from './admins.service';
-import { ApiBearerAuth } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { CreateAdminDto, EditAdminDto, UserRole } from './dto/admins.dto';
 import { Roles } from '../roles.decorator';
 
-@ApiBearerAuth()
+@ApiTags('Admin: Admins')
+@ApiBearerAuth('adminToken')
 @Controller('admin')
 @Roles(UserRole.SUPER_ADMIN)
 export class AdminsController {

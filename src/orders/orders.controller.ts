@@ -2,10 +2,11 @@ import { Controller, Get, Body, Patch, Param, Request } from '@nestjs/common';
 import { OrdersService } from './orders.service';
 import { RequestWithUser } from 'src/profile/profile.controller';
 import { UpdateOrderStatusDto } from './dto/order.dto';
-import { ApiBearerAuth } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
-@ApiBearerAuth()
-@Controller('orders')
+@ApiTags('User: Order')
+@ApiBearerAuth('userToken')
+@Controller('user/orders')
 export class OrdersController {
   constructor(private readonly ordersService: OrdersService) {}
 

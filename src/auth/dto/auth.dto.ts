@@ -108,8 +108,8 @@ export class BusinessSignUpDto {
   @IsString()
   confirmPassword: string;
 
-  @ApiProperty({ required: false, format: 'binary', type: 'string' })
-  logo?: File;
+  @ApiProperty({ required: true, format: 'binary', type: 'string' })
+  logo: File;
 
   @ApiProperty()
   @IsString()

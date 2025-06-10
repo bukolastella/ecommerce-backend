@@ -1,9 +1,10 @@
 import { Controller, Get, Param, Request } from '@nestjs/common';
 import { TransactionService } from 'src/transaction/transaction.service';
 import { RequestWithUser } from 'src/profile/profile.controller';
-import { ApiBearerAuth } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
-@ApiBearerAuth()
+@ApiTags('Business: Transaction')
+@ApiBearerAuth('businessToken')
 @Controller('business')
 export class BusinessController {
   constructor(

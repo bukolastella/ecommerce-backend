@@ -15,11 +15,12 @@ import {
   RemoveCategoryDto,
   UpdateCategoryDto,
 } from './dto/category.dto';
-import { ApiBearerAuth, ApiConsumes } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { IMAGE_UPLOAD_PIPE } from 'src/upload/fileValidators';
 
-@ApiBearerAuth()
+@ApiTags('Admin: Category')
+@ApiBearerAuth('adminToken')
 @Controller('category')
 export class CategoryController {
   constructor(private readonly categoryService: CategoryService) {}

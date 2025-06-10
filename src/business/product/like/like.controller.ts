@@ -1,10 +1,11 @@
 import { Controller, Get, Post, Param, Request } from '@nestjs/common';
 import { LikeService } from './like.service';
 import { RequestWithUser } from 'src/profile/profile.controller';
-import { ApiBearerAuth } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
-@ApiBearerAuth()
-@Controller('product')
+@ApiTags('User: Likes')
+@ApiBearerAuth('userToken')
+@Controller('user/product')
 export class LikeController {
   constructor(private readonly likeService: LikeService) {}
 

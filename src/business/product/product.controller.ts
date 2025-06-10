@@ -12,11 +12,12 @@ import { ProductService } from './product.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { RequestWithUser } from 'src/profile/profile.controller';
-import { ApiBearerAuth } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { Public } from 'src/public.decorator';
 
-@ApiBearerAuth()
-@Controller('product')
+@ApiTags('Business: Product')
+@ApiBearerAuth('businessToken')
+@Controller('business/product')
 export class ProductController {
   constructor(private readonly productService: ProductService) {}
 

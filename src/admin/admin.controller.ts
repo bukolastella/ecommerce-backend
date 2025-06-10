@@ -18,7 +18,7 @@ export class AdminController {
     return this.authService.login(dto);
   }
 
-  @ApiBearerAuth()
+  @ApiBearerAuth('adminToken')
   @Get('transactions/stat')
   transactionStatForAdmin() {
     return this.transService.transactionStatForAdmin();

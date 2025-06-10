@@ -3,9 +3,10 @@ import { BusinessesService } from './businesses.service';
 import { DisapproveBusinessDto } from './dto/business.dto';
 import { UserRole } from '../admins/dto/admins.dto';
 import { Roles } from '../roles.decorator';
-import { ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiQuery, ApiTags } from '@nestjs/swagger';
 
-@ApiBearerAuth()
+@ApiTags('Admin: Businesses')
+@ApiBearerAuth('adminToken')
 @Controller('admin/businesses')
 export class BusinessesController {
   constructor(private readonly businessesService: BusinessesService) {}
