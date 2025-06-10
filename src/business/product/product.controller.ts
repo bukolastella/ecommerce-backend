@@ -16,11 +16,11 @@ import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { Public } from 'src/public.decorator';
 
 @ApiTags('Business: Product')
-@ApiBearerAuth('businessToken')
 @Controller('business/product')
 export class ProductController {
   constructor(private readonly productService: ProductService) {}
 
+  @ApiBearerAuth('businessToken')
   @Post()
   create(
     @Body() createProductDto: CreateProductDto,
@@ -41,6 +41,7 @@ export class ProductController {
     return this.productService.findOne(+id);
   }
 
+  @ApiBearerAuth('businessToken')
   @Patch(':id')
   update(
     @Param('id') id: string,
@@ -50,6 +51,7 @@ export class ProductController {
     return this.productService.update(+id, updateProductDto, req.user?.id);
   }
 
+  @ApiBearerAuth('businessToken')
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.productService.remove(+id);
