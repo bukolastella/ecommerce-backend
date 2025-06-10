@@ -13,6 +13,7 @@ async function bootstrap() {
       new ClassSerializerInterceptor(reflector),
       new ResponseWrapperInterceptor(),
     );
+    app.enableCors();
 
     const config = new DocumentBuilder()
       .setTitle('E-commerce')
