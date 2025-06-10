@@ -13,7 +13,6 @@ async function bootstrap() {
       new ClassSerializerInterceptor(reflector),
       new ResponseWrapperInterceptor(),
     );
-    app.enableCors();
 
     const config = new DocumentBuilder()
       .setTitle('E-commerce')
@@ -48,6 +47,8 @@ async function bootstrap() {
     const documentFactory = () => SwaggerModule.createDocument(app, config);
     SwaggerModule.setup('api', app, documentFactory);
     console.log('hmmm');
+
+    app.enableCors();
 
     await app.listen(process.env.PORT ?? 3000, '0.0.0.0');
     console.log('🚀 App is running!');
